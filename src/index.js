@@ -6,7 +6,7 @@ const responseCreator = require('./utils/responseCreator');
 const cors = require('cors');
 
 const PORT = process.env.PORT || 3000;
-const BASE_URL = process.env.BASE_URL || process.env.VERCEL_URL || '';
+const BASE_URL = process.env.BASE_URL || '';
 
 app.use(cors());
 
