@@ -4,6 +4,10 @@ REST API prakiraan cuaca, suhu udara, kelembapan udara, kecepatan angin, dan ara
 
 Sumber: [Data Terbuka BMKG](https://data.bmkg.go.id/).
 
+## DEMO
+
+[https://cuaca-gempa-rest-api.vercel.app](https://cuaca-gempa-rest-api.vercel.app)
+
 ## Command
 
 - `npm start` - run server.

@@ -6,6 +6,7 @@ const responseCreator = require('./utils/responseCreator');
 const cors = require('cors');
 
 const PORT = process.env.PORT || 3000;
+const BASE_URL = process.env.BASE_URL || process.env.VERCEL_URL || '';
 
 app.use(cors());
 
@@ -22,13 +23,13 @@ app.get('/', (req, res) => {
     maintainer: 'Renova Muhamad Reza',
     source: 'https://github.com/renomureza/cuaca-gempa-rest-api',
     endpoint: {
-      quake: `${process.env.BASE_URL}/quake`,
+      quake: `${BASE_URL}/quake`,
       weather: {
         province: {
-          example: `${process.env.BASE_URL}/weather/jawa-barat`,
+          example: `${BASE_URL}/weather/jawa-barat`,
         },
         city: {
-          example: `${process.env.BASE_URL}/weather/jawa-barat/bandung`,
+          example: `${BASE_URL}/weather/jawa-barat/bandung`,
         },
       },
     },
