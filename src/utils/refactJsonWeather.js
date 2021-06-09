@@ -1,3 +1,4 @@
+const cardCodeToText = require('./cardCodeToText');
 const weatherCodeToText = require('./weatherCodeToText');
 
 const refactJsonWeather = (weathers = {}) => {
@@ -65,7 +66,7 @@ const refactJsonWeather = (weathers = {}) => {
                 return {
                   ...timeRange._attributes,
                   deg,
-                  card,
+                  card: `${card} (${cardCodeToText(card)})`,
                   sexa,
                 };
               }

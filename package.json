@@ -16,8 +16,9 @@
   ],
   "author": "Renova Muhamad Reza",
   "bugs": {
-    "url": "https://github.com/owner/project/issues"
+    "url": "https://github.com/renomureza/cuaca-gempa-rest-api/issues"
   },
+  "homepage": "https://github.com/renomureza/cuaca-gempa-rest-api#readme",
   "license": "MIT",
   "dependencies": {
     "axios": "^0.21.1",
