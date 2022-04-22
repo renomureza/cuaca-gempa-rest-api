@@ -1,6 +1,6 @@
 # REST API Cuaca & Gempa Terkini
 
-REST API prakiraan cuaca, suhu udara, kelembapan udara, kecepatan angin, dan arah angin untuk kota-kota besar di **35 provinsi** di Indonesia dalam waktu **3 harian** dan gempa terbaru dengan format JSON yang lebih ramah.
+REST API prakiraan cuaca, suhu udara, kelembapan udara, kecepatan angin, dan arah angin untuk kota-kota besar di **34 provinsi** di Indonesia dalam waktu **3 harian** dan gempa terbaru dengan format JSON yang lebih ramah.
 
 Sumber: [Data Terbuka BMKG](https://data.bmkg.go.id/).
 
