@@ -1,6 +1,7 @@
 const axios = require('axios');
 const xmlJs = require('xml-js');
 const ncache = require( "node-cache" );
+const geolib = require('geolib');
 const toUpperFirstLetterWords = require('../utils/toUpperFirstLetterWords');
 const refactJsonWeather = require('../utils/refactJsonWeather');
 const responseCreator = require('../utils/responseCreator');
@@ -13,6 +14,24 @@ const getByProvince = async (req, res) => {
     result = await getDataProvince(req, res);
   } catch (error) {
     return responseError(error, res);
+  }
+
+  if (req.query.lat != null && req.query.lon != null) {
+    let idx = -1;
+    let min = 0;
+    for (let i = 0; i < result.areas.length; i++) {
+      area = result.areas[i];
+      let dis = geolib.getDistance({lat: area.latitude,lon: area.longitude},{lat: req.query.lat, lon: req.query.lon});
+      if (i == 0 || min > dis) {
+        idx = i;
+        min = dis;
+      }
+    }
+
+    // return closes location
+    if (idx >= 0) {
+      return res.status(200).send(responseCreator({ data: result.areas[idx] }));
+    }
   }
 
   return res
@@ -39,7 +58,7 @@ const getDataProvince = async(req, res) => {
   
       return refactoredJsonWeathers;
     } catch (error) {
-      console.log('error', error);
+      // console.log('error', error);
       throw error;
     }
   } 
@@ -50,7 +69,7 @@ const responseError = (error, res) => {
   if (error.response.status === 404) {
     return res.status(404).send(responseCreator({ message: 'Not found' }));
   }
-  
+
   return res
     .status(500)
     .send(responseCreator({ message: 'Something went wrong' }));
