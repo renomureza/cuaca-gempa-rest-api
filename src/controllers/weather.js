@@ -1,4 +1,4 @@
-const { default: axios } = require('axios');
+const axios = require('axios');
 const xmlJs = require('xml-js');
 const toUpperFirstLetterWords = require('../utils/toUpperFirstLetterWords');
 const refactJsonWeather = require('../utils/refactJsonWeather');
@@ -44,7 +44,7 @@ const getByCity = async (req, res) => {
 
     const weathers = xmlJs.xml2js(result.data, { compact: true, spaces: 2 });
     const refactoredJsonWeathers = refactJsonWeather(weathers);
-
+    
     const weatherByCity = refactoredJsonWeathers.areas.find(
       (area) => area.description == toUpperFirstLetterWords(city, '-', ' ')
     );
@@ -55,6 +55,8 @@ const getByCity = async (req, res) => {
 
     return res.status(200).send(responseCreator({ data: weatherByCity }));
   } catch (error) {
+
+    console.log('error', error);
     return res
       .status(500)
       .send(responseCreator({ data: 'Something went wrong' }));

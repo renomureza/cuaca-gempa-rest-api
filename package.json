@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node .",
     "dev": "nodemon .",
-    "build": "ncc build src/index.js -m -a -o dist"
+    "build": "ncc build src/index.js -m -a -o dist",
+    "prod": "npm run build && node dist/index.js"
   },
   "keywords": [
     "BMKG",
@@ -26,6 +27,7 @@
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
+    "node-cache": "^5.1.2",
     "xml-js": "^1.6.11"
   },
   "devDependencies": {
