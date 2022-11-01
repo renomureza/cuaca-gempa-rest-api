@@ -7,7 +7,8 @@
     "start": "node .",
     "dev": "nodemon .",
     "build": "ncc build src/index.js -m -a -o dist",
-    "prod": "npm run build && node dist/index.js"
+    "prod": "npm run build && node dist/index.js",
+    "pkg": "pkg -t alpine dist/index.js -o bmkg-cuaca-gempa"
   },
   "keywords": [
     "BMKG",
@@ -32,6 +33,7 @@
   },
   "devDependencies": {
     "@vercel/ncc": "^0.34.0",
-    "nodemon": "^2.0.7"
+    "nodemon": "^2.0.7",
+    "pkg": "^5.8.0"
   }
 }

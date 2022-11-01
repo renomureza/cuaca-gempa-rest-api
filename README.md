@@ -16,6 +16,17 @@ Sumber: [Data Terbuka BMKG](https://data.bmkg.go.id/).
 
 - `npm start` - run server.
 - `npm run dev` - run dev server.
+- `npm run build` - build single `dist/index.js` file
+- `npm run prod` - build single file and run
+- `npm run pkg` - create executable file with pkg
+
+## Build
+
+Build for platform
+```
+docker build --platform linux/amd64 . -t bmkg-cuaca-gempa:dev
+```
+
 
 ## Gempa
 
