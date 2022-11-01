@@ -7,6 +7,12 @@ const refactJsonWeather = require('../utils/refactJsonWeather');
 const responseCreator = require('../utils/responseCreator');
 const wCache = new ncache({ stdTTL: 100, checkperiod: 120 });
 
+/**
+ * Handle request bmkg open data by province
+ * @param Request req need req.params.province
+ * @param Response res 
+ * @returns Response
+ */
 const getByProvince = async (req, res) => {
   let result = undefined;
   
@@ -39,6 +45,12 @@ const getByProvince = async (req, res) => {
     .send(responseCreator({ data: result }));
 };
 
+/**
+ * Extract data from bmkg open data by province, cache if applicable
+ * @param Request req need req.params.province
+ * @param Response res 
+ * @returns Response
+ */
 const getDataProvince = async(req, res) => {
   const { province } = req.params;
   let result = undefined;
@@ -65,6 +77,12 @@ const getDataProvince = async(req, res) => {
   return result;
 }
 
+/**
+ * Config response error by error object
+ * @param Error error
+ * @param Response res 
+ * @returns Response
+ */
 const responseError = (error, res) => {
   if (error.response.status === 404) {
     return res.status(404).send(responseCreator({ message: 'Not found' }));
@@ -75,6 +93,12 @@ const responseError = (error, res) => {
     .send(responseCreator({ message: 'Something went wrong' }));
 };
 
+/**
+ * Handle request from bmkg open data by city
+ * @param Request req need req.params.province & req.params.city
+ * @param Response res 
+ * @returns Response
+ */
 const getByCity = async (req, res) => {
   const { province, city } = req.params;
   let resultprov = undefined;
@@ -95,5 +119,6 @@ const getByCity = async (req, res) => {
 
   return res.status(200).send(responseCreator({ data: weatherByCity }));
 };
+
 
 module.exports = { getByProvince, getByCity };
