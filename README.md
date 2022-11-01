@@ -8,6 +8,10 @@ Sumber: [Data Terbuka BMKG](https://data.bmkg.go.id/).
 
 [https://cuaca-gempa-rest-api.vercel.app](https://cuaca-gempa-rest-api.vercel.app)
 
+## Installasi
+
+- `npm install`
+
 ## Command
 
 - `npm start` - run server.
