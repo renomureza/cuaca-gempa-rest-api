@@ -76,7 +76,7 @@ const getDataScanAll = async(req, res) => {
         allAreas = allAreas.concat(resprov.areas);
       }));
 
-      wCache.set(key, 300);
+      wCache.set(key, allAreas, 300);
       return allAreas;
     } catch (error) {
       console.log('error', error);
@@ -102,6 +102,28 @@ const getDataScanAll = async(req, res) => {
     .send(responseCreator({ message: 'Something went wrong' }));
 };
 
+const processByLocation = (areas, req, res) => {
+  if (req.query.lat != null && req.query.lon != null) {
+    let idx = -1;
+    let min = 0;
+    for (let i = 0; i < areas.length; i++) {
+      area = areas[i];
+      let dis = geolib.getDistance({lat: area.latitude,lon: area.longitude},{lat: req.query.lat, lon: req.query.lon});
+      if (i == 0 || min > dis) {
+        idx = i;
+        min = dis;
+      }
+    }
+
+    // return closes location
+    if (idx >= 0) {
+      return res.status(200).send(responseCreator({ data: areas[idx] }));
+    }
+  }
+
+  return false;
+};
+
 /**
  * Handle request bmkg open data by province
  * @param Request req need req.params.province
@@ -117,27 +139,13 @@ const getByProvince = async (req, res) => {
     return responseError(error, res);
   }
 
-  if (req.query.lat != null && req.query.lon != null) {
-    let idx = -1;
-    let min = 0;
-    for (let i = 0; i < result.areas.length; i++) {
-      area = result.areas[i];
-      let dis = geolib.getDistance({lat: area.latitude,lon: area.longitude},{lat: req.query.lat, lon: req.query.lon});
-      if (i == 0 || min > dis) {
-        idx = i;
-        min = dis;
-      }
-    }
+  isLoc = processByLocation(result.areas, req, res);
 
-    // return closes location
-    if (idx >= 0) {
-      return res.status(200).send(responseCreator({ data: result.areas[idx] }));
-    }
-  }
-
-  return res
+  if (isLoc == false) {
+    return res
     .status(200)
     .send(responseCreator({ data: result }));
+  }
 };
 
 
@@ -183,27 +191,13 @@ const getByCity = async (req, res) => {
     return responseError(error, res);
   }
 
-  if (req.query.lat != null && req.query.lon != null) {
-    let idx = -1;
-    let min = 0;
-    for (let i = 0; i < result.areas.length; i++) {
-      area = result.areas[i];
-      let dis = geolib.getDistance({lat: area.latitude,lon: area.longitude},{lat: req.query.lat, lon: req.query.lon});
-      if (i == 0 || min > dis) {
-        idx = i;
-        min = dis;
-      }
-    }
+  isLoc = processByLocation(result, req, res);
 
-    // return closes location
-    if (idx >= 0) {
-      return res.status(200).send(responseCreator({ data: result.areas[idx] }));
-    }
-  }
-
-  return res
+  if (isLoc == false) {
+    return res
     .status(200)
     .send(responseCreator({ data: result }));
+  }
 };
 
 
