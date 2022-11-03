@@ -23,6 +23,7 @@ var tree = new kdTree(points, distance, ["latitude", "longitude"]);
 wCache.on("del", function( key, value ){
 	if (key=="scanall") {
     // reload data
+    getDataScanAll();
   }
 });
 
@@ -32,8 +33,7 @@ wCache.on("del", function( key, value ){
  * @param Response res 
  * @returns Response
  */
- const getDataProvince = async(req, res) => {
-  const { province } = req.params;
+ const getDataProvince = async(province) => {
   let result = undefined;
   let timeStamp = Date.now();
   let key = province.replace(/[,-: ]/g, "").toLowerCase();
@@ -63,13 +63,15 @@ wCache.on("del", function( key, value ){
 /**
  * Get Data Scan All
  */
-const getDataScanAll = async(req, res) => {
+const getDataScanAll = async() => {
   let result = undefined;
   let timeStamp = Date.now();
   let key = "scanall";
 
   result = wCache.get(key);
+  // console.log(result);
   if (result == undefined) {
+    console.log('load data', (new Date).toISOString());
     try {
       // get list province
       result = await axios.get(
@@ -91,8 +93,7 @@ const getDataScanAll = async(req, res) => {
       tree = new kdTree(points, distance, ["latitude", "longitude"]);
 
       await Promise.all(list.map(async(prov) => {
-        req.params.province = prov;
-        let resprov = await getDataProvince(req, res);
+        let resprov = await getDataProvince(prov);
         resprov.areas.map(area => {
           tree.insert(area);
         });
@@ -125,14 +126,12 @@ const getDataScanAll = async(req, res) => {
     .send(responseCreator({ message: 'Something went wrong' }));
 };
 
-const processByLocation = (areas, req, res) => {
-  if (req.query.lat != null && req.query.lon != null) {
-    let idx = -1;
-    let min = 0;
+const processByLocation = (lat, lon) => {
+  if (lat != null && lon != null) {
     let area = {};
-    
-    const time = process.hrtime();
+    let idx = -1;
 
+    // let min = 0;
     // for (let i = 0; i < areas.length; i++) {
     //   area = areas[i];
     //   let dis = geolib.getDistance({lat: area.latitude,lon: area.longitude},{lat: req.query.lat, lon: req.query.lon});
@@ -146,18 +145,17 @@ const processByLocation = (areas, req, res) => {
     // }
 
 
-    point = {latitude: req.query.lat, longitude: req.query.lon};
+    point = {latitude: lat, longitude: lon};
     near = tree.nearest(point, 1);
-    // console.log(near);
     area = near[0][0];
     idx = 1;
 
-    const diff = process.hrtime(time);
-    console.log(diff);
+    // const diff = process.hrtime(time);
+    // console.log(diff);
     
     // return closes location
     if (idx >= 0) {
-      return res.status(200).send(responseCreator({ data: area }));
+      return area;
     }
   }
 
@@ -172,20 +170,25 @@ const processByLocation = (areas, req, res) => {
  */
 const getByProvince = async (req, res) => {
   let result = undefined;
-  
+  let { province } = req.params;
+
+  // if get by location
+  loc = processByLocation(req.query.lat, req.query.lon);
+  if (loc !== false) {
+    return res
+      .status(200)
+      .send(responseCreator({ data: loc }));
+  }
+
   try {
-    result = await getDataProvince(req, res);
+    result = await getDataProvince(province);
   } catch (error) {
     return responseError(error, res);
   }
 
-  isLoc = processByLocation(result.areas, req, res);
-
-  if (isLoc == false) {
-    return res
+  return res
     .status(200)
     .send(responseCreator({ data: result }));
-  }
 };
 
 
@@ -200,7 +203,7 @@ const getByCity = async (req, res) => {
   let resultprov = undefined;
 
   try {
-    resultprov = await getDataProvince(req, res);
+    resultprov = await getDataProvince(province);
   } catch (error) {
     return responseError(error, res);
   }
@@ -224,21 +227,28 @@ const getByCity = async (req, res) => {
  */
  const getScanAll = async (req, res) => {
   let result = undefined;
+  const time = process.hrtime();
+
+  // if get by location
+  loc = processByLocation(req.query.lat, req.query.lon);
+  if (loc !== false) {
+    return res
+      .status(200)
+      .send(responseCreator({ data: loc }));
+  }
   
   try {
-    result = await getDataScanAll(req, res); 
+    result = await getDataScanAll(); 
   } catch (error) {
     return responseError(error, res);
   }
 
-  isLoc = processByLocation(result, req, res);
-
-  if (isLoc == false) {
-    return res
+  return res
     .status(200)
     .send(responseCreator({ data: result }));
-  }
 };
 
+// init data
+getDataScanAll();
 
 module.exports = { getByProvince, getByCity, getScanAll };
