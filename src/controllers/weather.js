@@ -6,7 +6,25 @@ const cheerio = require('cheerio');
 const toUpperFirstLetterWords = require('../utils/toUpperFirstLetterWords');
 const refactJsonWeather = require('../utils/refactJsonWeather');
 const responseCreator = require('../utils/responseCreator');
+const { kdTree } = require('../utils/kdTree');
 const wCache = new ncache({ stdTTL: 100, checkperiod: 120 });
+
+/**
+ * calculate distance
+ */
+const distance = (a, b) => {
+  // console.log(a, b);
+  return geolib.getDistance({lat: a.latitude,lon: a.longitude},{lat: b.latitude, lon: b.longitude});
+};
+
+let points = [];
+var tree = new kdTree(points, distance, ["latitude", "longitude"]);
+
+wCache.on("del", function( key, value ){
+	if (key=="scanall") {
+    // reload data
+  }
+});
 
 /**
  * Extract data from bmkg open data by province, cache if applicable
@@ -70,9 +88,14 @@ const getDataScanAll = async(req, res) => {
       
       // get per province data
       let allAreas = [];
+      tree = new kdTree(points, distance, ["latitude", "longitude"]);
+
       await Promise.all(list.map(async(prov) => {
         req.params.province = prov;
         let resprov = await getDataProvince(req, res);
+        resprov.areas.map(area => {
+          tree.insert(area);
+        });
         allAreas = allAreas.concat(resprov.areas);
       }));
 
@@ -106,18 +129,35 @@ const processByLocation = (areas, req, res) => {
   if (req.query.lat != null && req.query.lon != null) {
     let idx = -1;
     let min = 0;
-    for (let i = 0; i < areas.length; i++) {
-      area = areas[i];
-      let dis = geolib.getDistance({lat: area.latitude,lon: area.longitude},{lat: req.query.lat, lon: req.query.lon});
-      if (i == 0 || min > dis) {
-        idx = i;
-        min = dis;
-      }
-    }
+    let area = {};
+    
+    const time = process.hrtime();
 
+    // for (let i = 0; i < areas.length; i++) {
+    //   area = areas[i];
+    //   let dis = geolib.getDistance({lat: area.latitude,lon: area.longitude},{lat: req.query.lat, lon: req.query.lon});
+    //   if (i == 0 || min > dis) {
+    //     idx = i;
+    //     min = dis;
+    //   }
+    // }
+    // if (idx >= 0) {
+    //   area = areas[idx];
+    // }
+
+
+    point = {latitude: req.query.lat, longitude: req.query.lon};
+    near = tree.nearest(point, 1);
+    // console.log(near);
+    area = near[0][0];
+    idx = 1;
+
+    const diff = process.hrtime(time);
+    console.log(diff);
+    
     // return closes location
     if (idx >= 0) {
-      return res.status(200).send(responseCreator({ data: areas[idx] }));
+      return res.status(200).send(responseCreator({ data: area }));
     }
   }
 
