@@ -12,6 +12,7 @@ const weatherCode = {
   63: 'Hujan Lebat',
   80: 'Hujan Lokal',
   95: 'Hujan Petir',
+  97: 'Hujan Petir',
 };
 
 const weatherCodeToText = (code) => {

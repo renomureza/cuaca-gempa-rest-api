@@ -3,9 +3,11 @@ const xmlJs = require('xml-js');
 const ncache = require( "node-cache" );
 const geolib = require('geolib');
 const cheerio = require('cheerio');
+const { createCanvas, loadImage } = require('canvas');
 const toUpperFirstLetterWords = require('../utils/toUpperFirstLetterWords');
 const refactJsonWeather = require('../utils/refactJsonWeather');
 const responseCreator = require('../utils/responseCreator');
+const dateFormat = require('../utils/dateFormat');
 const { kdTree } = require('../utils/kdTree');
 const wCache = new ncache({ stdTTL: 100, checkperiod: 120 });
 
@@ -131,20 +133,6 @@ const processByLocation = (lat, lon) => {
     let area = {};
     let idx = -1;
 
-    // let min = 0;
-    // for (let i = 0; i < areas.length; i++) {
-    //   area = areas[i];
-    //   let dis = geolib.getDistance({lat: area.latitude,lon: area.longitude},{lat: req.query.lat, lon: req.query.lon});
-    //   if (i == 0 || min > dis) {
-    //     idx = i;
-    //     min = dis;
-    //   }
-    // }
-    // if (idx >= 0) {
-    //   area = areas[idx];
-    // }
-
-
     point = {latitude: lat, longitude: lon};
     near = tree.nearest(point, 1);
     area = near[0][0];
@@ -225,7 +213,7 @@ const getByCity = async (req, res) => {
  * @param Response res 
  * @returns Response
  */
- const getScanAll = async (req, res) => {
+const getScanAll = async (req, res) => {
   let result = undefined;
   const time = process.hrtime();
 
@@ -248,7 +236,126 @@ const getByCity = async (req, res) => {
     .send(responseCreator({ data: result }));
 };
 
+/**
+ * Get data param with paramId from area
+ * @param string strtime 
+ * @param Object area
+ * @returns Response
+ */
+const processParam = async(strtime, area) => {
+  let temp;
+  let weather;
+  let ws;
+  let wd;
+  for (i = 0; area.params.length > i; i++) {
+    val = area.params[i];
+    if (val.id == 't') {
+      temp = val;
+    }
+    if (val.id == 'weather') {
+      weather = val;
+    }
+    if (val.id == 'ws') {
+      ws = val;
+    }
+    if (val.id == 'wd') {
+      wd = val;
+    }
+  };
+  let j = 0
+  for (j; temp.times.length > j; j++) {
+    let tm = temp.times[j];
+    if (tm.datetime > strtime) {
+      break;
+    }
+  }
+  j = j-1;
+
+  return {
+    'idx': j, 
+    'vt': temp.times[j],
+    'vweather': weather.times[j], 
+    'vws': ws.times[j], 
+    'vwd': wd.times[j],
+    't': temp, 
+    'weather': weather, 
+    'ws': ws, 
+    'wd': wd
+  };
+};
+
+/**
+ * Handle request serve widget weather image data
+ * @param Request req need req.params.province & req.params.city
+ * @param Response res 
+ * @returns Response
+ */
+const getWidget = async (req, res) => {
+  const width = req.query.width ? parseInt(req.query.width):400;
+  const height = req.query.height ? parseInt(req.query.height):70;
+  const bgcolor = req.query.bgcolor ? req.query.bgcolor:'#1D3051';
+  const fillcolor = req.query.fillcolor ? req.query.fillcolor:'rgba(255,255,255,0.5)';
+  const canvas = createCanvas(width, height);
+  const ctx = canvas.getContext('2d');
+  let text = '';
+
+  // get area
+  // if get by location
+  let area = processByLocation(req.query.lat, req.query.lon);
+  if (area == false) {
+    return responseError(404, res);
+  }
+
+  let now = new Date();
+  let strtime = dateFormat(now);
+  let result = await processParam(strtime, area);
+  console.log(strtime, result.vt, result.vweather);
+
+  // set background
+  ctx.fillStyle = bgcolor;
+  ctx.fillRect(0, 0, width, height, 50);
+  ctx.fillStyle = fillcolor;
+
+  let wicon = await loadImage('assets/'+result.vweather.code+'.svg');
+  ctx.drawImage(wicon, 10, 10, height-20, height-20);
+
+  // write weather
+  let celciusHeight = parseInt(height/2);
+  let celcius = result.vt.celcius + '°';
+  text = ctx.measureText(celcius);
+  ctx.font = celciusHeight + 'px Arial';
+  ctx.fillText(celcius, height, height - parseInt((height - celciusHeight)/2) - text.emHeightAscent);
+  
+  // write city
+  let cityHeight = parseInt(celciusHeight * 0.9);
+  ctx.font = cityHeight + 'px Impact';
+  let city = area.description;
+  text = ctx.measureText(city);
+  // console.log('city', cityHeight, parseInt((height - cityHeight)/2), height - parseInt(height - cityHeight) , text);
+  ctx.fillText(city, width - text.width - 10, height - Number(text.actualBoundingBoxAscent)-10);
+
+  // write weather
+  let weatherHeight = parseInt(cityHeight * 0.5);
+  ctx.font = weatherHeight + 'px Impact';
+  let weather = result.vweather.name;
+  text = ctx.measureText(weather);
+  ctx.fillText(weather, width - text.width - 10, height - Number(text.actualBoundingBoxAscent));
+
+  stream = canvas.createPNGStream();
+  stream.on('end', () => res.end());
+  stream.pipe(res);
+ };
+
+/**
+ * Handle request serve detail wather data
+ * @param Request req need req.params.province & req.params.city
+ * @param Response res 
+ * @returns Response
+ */
+ const getDetail = async (req, res) => {
+};
+
 // init data
 getDataScanAll();
 
-module.exports = { getByProvince, getByCity, getScanAll };
+module.exports = { getByProvince, getByCity, getScanAll, getWidget, getDetail };
