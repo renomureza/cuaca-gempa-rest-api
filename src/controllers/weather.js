@@ -7,7 +7,7 @@ const { createCanvas, loadImage } = require('canvas');
 const toUpperFirstLetterWords = require('../utils/toUpperFirstLetterWords');
 const refactJsonWeather = require('../utils/refactJsonWeather');
 const responseCreator = require('../utils/responseCreator');
-const dateFormat = require('../utils/dateFormat');
+const { dateFormat, timeStrDate }  = require('../utils/dateFormat');
 const { kdTree } = require('../utils/kdTree');
 const wCache = new ncache({ stdTTL: 100, checkperiod: 120 });
 
@@ -15,12 +15,10 @@ const wCache = new ncache({ stdTTL: 100, checkperiod: 120 });
  * calculate distance
  */
 const distance = (a, b) => {
-  // console.log(a, b);
   return geolib.getDistance({lat: a.latitude,lon: a.longitude},{lat: b.latitude, lon: b.longitude});
 };
 
-let points = [];
-var tree = new kdTree(points, distance, ["latitude", "longitude"]);
+var tree = new kdTree([], distance, ["latitude", "longitude"]);
 
 wCache.on("del", function( key, value ){
 	if (key=="scanall") {
@@ -71,7 +69,6 @@ const getDataScanAll = async() => {
   let key = "scanall";
 
   result = wCache.get(key);
-  // console.log(result);
   if (result == undefined) {
     console.log('load data', (new Date).toISOString());
     try {
@@ -92,7 +89,7 @@ const getDataScanAll = async() => {
       
       // get per province data
       let allAreas = [];
-      tree = new kdTree(points, distance, ["latitude", "longitude"]);
+      tree = new kdTree([], distance, ["latitude", "longitude"]);
 
       await Promise.all(list.map(async(prov) => {
         let resprov = await getDataProvince(prov);
@@ -247,6 +244,7 @@ const processParam = async(strtime, area) => {
   let weather;
   let ws;
   let wd;
+  let hu;
   for (i = 0; area.params.length > i; i++) {
     val = area.params[i];
     if (val.id == 't') {
@@ -260,6 +258,9 @@ const processParam = async(strtime, area) => {
     }
     if (val.id == 'wd') {
       wd = val;
+    }
+    if (val.id == 'hu') {
+      hu = val;
     }
   };
   let j = 0
@@ -280,7 +281,8 @@ const processParam = async(strtime, area) => {
     't': temp, 
     'weather': weather, 
     'ws': ws, 
-    'wd': wd
+    'wd': wd,
+    'hu': hu,
   };
 };
 
@@ -309,22 +311,56 @@ const getWidget = async (req, res) => {
   let now = new Date();
   let strtime = dateFormat(now);
   let result = await processParam(strtime, area);
-  console.log(strtime, result.vt, result.vweather);
 
   // set background
   ctx.fillStyle = bgcolor;
   ctx.fillRect(0, 0, width, height, 50);
   ctx.fillStyle = fillcolor;
 
-  let wicon = await loadImage('assets/'+result.vweather.code+'.svg');
-  ctx.drawImage(wicon, 10, 10, height-20, height-20);
-
-  // write weather
   let celciusHeight = parseInt(height/2);
-  let celcius = result.vt.celcius + '°';
-  text = ctx.measureText(celcius);
+  let humidityHeight = parseInt(height/5);
+
+  let wicon = await loadImage('assets/'+result.vweather.code+'.svg');
+  ctx.drawImage(wicon, 10, 0, height-20, height-20);
+
+  // write degree
+  
+  let celcius = result.vt.celcius.split(' ');
+  celcius = celcius[0] + '°' + celcius[1];
   ctx.font = celciusHeight + 'px Arial';
-  ctx.fillText(celcius, height, height - parseInt((height - celciusHeight)/2) - text.emHeightAscent);
+  text = ctx.measureText(celcius);
+  ctx.fillText(celcius, height, height - parseInt((height - celciusHeight)/2) - (2*text.emHeightDescent));
+
+  // write humidity
+  let wtime = timeStrDate(result.vt.datetime);
+  let huicon = await loadImage('assets/hu.svg');
+  let huval = result.hu.times[result.idx].value;
+  ctx.font = humidityHeight + 'px Arial';
+  text = ctx.measureText(huval);
+  // console.log(text, humidityHeight, height - humidityHeight - 10, height - humidityHeight + text.emHeightDescent);
+  let posx = 10;
+  ctx.drawImage(huicon, posx, height - humidityHeight - 8, humidityHeight, humidityHeight);
+  posx += humidityHeight;
+  ctx.fillText(huval, posx, height - 10); //text.emHeightDescent
+  posx += text.width + 5;
+
+  // write wind speed
+  let wsicon = await loadImage('assets/ws.svg');
+  let wsval = result.ws.times[result.idx].kph + ' kph';
+  text = ctx.measureText(wsval);
+  
+  ctx.drawImage(wsicon, posx, height - humidityHeight - 8, humidityHeight, humidityHeight);
+  posx += humidityHeight + 3;
+  ctx.fillText(wsval, posx, height - 10); //text.emHeightDescent
+
+  // write wind direction
+  let wdicon = await loadImage('assets/wd.svg');
+  let wdval = result.wd.times[result.idx].card.split(' ');
+  wdval = wdval[0];
+  posx += text.width + 5;
+  ctx.drawImage(wdicon, posx, height - humidityHeight - 8, humidityHeight, humidityHeight);
+  posx += humidityHeight + 3;
+  ctx.fillText(wdval, posx, height - 10); //text.emHeightDescent
   
   // write city
   let cityHeight = parseInt(celciusHeight * 0.9);
