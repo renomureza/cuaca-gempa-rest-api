@@ -20,7 +20,7 @@ const distance = (a, b) => {
 
 var tree = new kdTree([], distance, ["latitude", "longitude"]);
 
-wCache.on("del", function( key, value ){
+wCache.on("expired", function( key, value ){
 	if (key=="scanall") {
     // reload data
     getDataScanAll();
@@ -89,15 +89,17 @@ const getDataScanAll = async() => {
       
       // get per province data
       let allAreas = [];
-      tree = new kdTree([], distance, ["latitude", "longitude"]);
+      let newtree = new kdTree([], distance, ["latitude", "longitude"]);
 
       await Promise.all(list.map(async(prov) => {
         let resprov = await getDataProvince(prov);
         resprov.areas.map(area => {
-          tree.insert(area);
+          newtree.insert(area);
         });
         allAreas = allAreas.concat(resprov.areas);
       }));
+
+      tree = newtree;
 
       wCache.set(key, allAreas, 300);
       return allAreas;
@@ -311,6 +313,7 @@ const getWidget = async (req, res) => {
   let now = new Date();
   let strtime = dateFormat(now);
   let result = await processParam(strtime, area);
+  console.log('temp', result.idx, result.t.times[result.idx]);
 
   // set background
   ctx.fillStyle = bgcolor;
@@ -318,7 +321,7 @@ const getWidget = async (req, res) => {
   ctx.fillStyle = fillcolor;
 
   let celciusHeight = parseInt(height/2);
-  let humidityHeight = parseInt(height/5);
+  let humidityHeight = 10;
 
   let wicon = await loadImage('assets/'+result.vweather.code+'.svg');
   ctx.drawImage(wicon, 10, 0, height-20, height-20);
@@ -380,7 +383,7 @@ const getWidget = async (req, res) => {
   stream = canvas.createPNGStream();
   stream.on('end', () => res.end());
   stream.pipe(res);
- };
+};
 
 /**
  * Handle request serve detail wather data
@@ -388,7 +391,25 @@ const getWidget = async (req, res) => {
  * @param Response res 
  * @returns Response
  */
- const getDetail = async (req, res) => {
+const getDetail = async (req, res) => {
+  const bgcolor = req.query.bgcolor ? req.query.bgcolor:'#020E27';
+
+  // get area
+  // if get by location
+  let area = processByLocation(req.query.lat, req.query.lon);
+  if (area == false) {
+    return responseError(404, res);
+  }
+
+  let now = new Date();
+  let strtime = dateFormat(now);
+  let result = await processParam(strtime, area);
+
+  res.render('detail.hbs', {
+    area: area,
+    result: result,
+    strnow: strtime,
+  });
 };
 
 // init data

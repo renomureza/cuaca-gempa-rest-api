@@ -24,7 +24,7 @@ const dateFormat = (ddate) => {
  * @param String strdate
  * @returns Date
  */
-const dateFrom = (strdate) => {
+const dateFromStr = (strdate) => {
   let y = strdate.substr(0,4);
   let m = strdate.substr(4,2);
   let d = strdate.substr(6,2);
@@ -41,7 +41,18 @@ const dateFrom = (strdate) => {
  * @returns Date
  */
 const timeStrDate = (strdate) => {
-  return strdate.substr(8,2) + ':' + strdate.substr(10,2);  
+  return strdate.substr(8,2) + ':' + strdate.substr(10,2) + ' WIB';
 };
 
-module.exports = { dateFormat, dateFrom, timeStrDate };
+var dayNames = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jum'at", "Sabtu"];
+var monthNames = ["", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+
+const dayName = (ndate) => {
+  return dayNames[ndate.getDay()];
+};
+
+const monthName = (ndate) => {
+  return monthNames[ndate.getMonth()];
+};
+
+module.exports = { dateFormat, dateFromStr, timeStrDate, monthName, dayName };
