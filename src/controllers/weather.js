@@ -134,6 +134,9 @@ const processByLocation = (lat, lon) => {
 
     point = {latitude: lat, longitude: lon};
     near = tree.nearest(point, 1);
+    if (!near) {
+      return false;
+    }
     area = near[0][0];
     idx = 1;
 
@@ -298,7 +301,7 @@ const getWidget = async (req, res) => {
   const width = req.query.width ? parseInt(req.query.width):400;
   const height = req.query.height ? parseInt(req.query.height):70;
   const bgcolor = req.query.bgcolor ? req.query.bgcolor:'#1D3051';
-  const fillcolor = req.query.fillcolor ? req.query.fillcolor:'rgba(255,255,255,0.5)';
+  const fillcolor = req.query.fillcolor ? req.query.fillcolor:'rgba(255,255,255,0.7)';
   const canvas = createCanvas(width, height);
   const ctx = canvas.getContext('2d');
   let text = '';

@@ -6,7 +6,7 @@ const quakeRoute = require('./routes/quake');
 const responseCreator = require('./utils/responseCreator');
 const cors = require('cors');
 const hbs = require('hbs');
-const { setvar, isdatechange, tostringdate, tostringtime, when } = require('./utils/helperFunctions');
+const { setvar, isdatechange, tostringdate, tostringtime, when, isday, tosvgcode } = require('./utils/helperFunctions');
 
 const PORT = process.env.PORT || 3000;
 const BASE_URL = process.env.BASE_URL || '';
@@ -15,6 +15,8 @@ hbs.registerHelper("setvar", setvar);
 hbs.registerHelper("isdatechange", isdatechange);
 hbs.registerHelper("tostringdate", tostringdate);
 hbs.registerHelper("tostringtime", tostringtime);
+hbs.registerHelper("tosvgcode", tosvgcode);
+hbs.registerHelper("isday", isday);
 hbs.registerHelper("when", when);
 // hbs.registerPartials(__dirname + '/views/partials', function (err) {});
 

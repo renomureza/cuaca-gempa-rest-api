@@ -9,7 +9,7 @@
 	<body class="bg-page text-gray-100 ml-5 mr-5">
 		<div class="w-full">
 			<div>
-				<span class="text-3xl font-bold">{{ area.description }}</span>
+				<span class="text-3xl font-medium">{{ area.description }}</span>
 			</div>
 			<div>
 				<span class="text-lg font-medium">{{ area.domain }}</span>
@@ -27,13 +27,13 @@
 		</div>
 		<div class="flex overflow-x-scroll hide-scroll-bar gap-2">
 			{{/if}}
-			<div class="flex flex-col rounded-md p-4 weather-card bg-day text-gray-100{{#when @root.result.idx "eq" @index }} border-2 border-red-400{{/when}}">
+			<div class="flex flex-col rounded-md p-4 weather-card {{#if (isday datetime) }}bg-day{{else}}bg-day{{/if}} text-gray-100{{#when @root.result.idx "eq" @index }} border-2 border-red-400{{/when}}">
 				<div class="flex flex-row items-center justify-center">
 					<span class="text-sm font-bold">{{tostringtime datetime}}</span>
 				</div>
 				{{#with (lookup ../result.weather.times @index) }}
 				<div class="mt-4 self-center inline-flex items-center justify-center rounded-lg h-16 w-16">
-					<img class="weather-icon" src = "/assets/{{ code }}.svg" alt="weather"/>
+					<img class="weather-icon" src = "/assets/{{tosvgcode code datetime}}.svg" alt="weather"/>
 				</div>
 				<div class="flex flex-row items-center justify-center mt-4">
 					<span class="text-xs font-bold">{{ name }}</span>
