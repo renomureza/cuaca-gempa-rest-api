@@ -48,13 +48,13 @@ Sumber: [Data Terbuka BMKG](https://data.bmkg.go.id/).
 
 **Endpoint:**
 
-`/{provinsi}`
+`/weather/{provinsi}`
 
 > :warning: Gunakan `/dki-jakarta` dan `di-yogyakarta` untuk Provinsi DKI Jakarta dan DI Yogyakarta.
 
 **Contoh:**
 
-`/jawa-barat`
+`/weather/jawa-barat`
 
 **Response**
 
@@ -232,11 +232,11 @@ Sumber: [Data Terbuka BMKG](https://data.bmkg.go.id/).
 
 **Endpoint:**
 
-`/{provinsi}/{kota}`
+`/weather/{provinsi}/{kota}`
 
 **Contoh:**
 
-`/jawa-barat/bandung`
+`/weather/jawa-barat/bandung`
 
 **Response:**
 
