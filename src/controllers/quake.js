@@ -1,4 +1,4 @@
-const { default: axios } = require('axios');
+const axios = require('axios');
 const refactJsonQuake = require('../utils/refactJsonQuake');
 const responseCreator = require('../utils/responseCreator');
 

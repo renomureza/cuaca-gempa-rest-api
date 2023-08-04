@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.weather-card {
+  min-width: 130px;
+  background-color: blue;
+}
+
+.bg-day {
+  /* background-image: url(../assets/cerah-berawan-siang.jpg); */
+  background-color: rgba(85, 106, 149, 0.888)
+}
+.bg-page {
+  background-color: #020E27;
+}
+.bg-night {
+  /* background-image: url(../assets/cerah-berawan-malam.jpg); */
+  background-color: rgba(59,89,113,0.9)
+}

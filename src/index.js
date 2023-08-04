@@ -1,14 +1,30 @@
 require('dotenv').config();
-const app = require('express')();
+const express = require('express');
+const app = express();
 const weatherRoute = require('./routes/weather');
 const quakeRoute = require('./routes/quake');
 const responseCreator = require('./utils/responseCreator');
 const cors = require('cors');
+const hbs = require('hbs');
+const { setvar, isdatechange, tostringdate, tostringtime, when, isday, tosvgcode } = require('./utils/helperFunctions');
 
 const PORT = process.env.PORT || 3000;
 const BASE_URL = process.env.BASE_URL || '';
 
+hbs.registerHelper("setvar", setvar);
+hbs.registerHelper("isdatechange", isdatechange);
+hbs.registerHelper("tostringdate", tostringdate);
+hbs.registerHelper("tostringtime", tostringtime);
+hbs.registerHelper("tosvgcode", tosvgcode);
+hbs.registerHelper("isday", isday);
+hbs.registerHelper("when", when);
+// hbs.registerPartials(__dirname + '/views/partials', function (err) {});
+
+app.set('view engine', 'hbs');
+
 app.use(cors());
+app.use(express.static('public'));
+app.use('/assets', express.static('assets'));
 
 app.use((req, res, next) => {
   res.setHeader('Cache-Control', 's-maxage=1, stale-while-revalidate=59');

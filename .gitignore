@@ -1,3 +1,6 @@
 node_modules
 .env
 .vercel
+dist
+bmkg-cuaca-gempa
+.DS_Store
