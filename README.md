@@ -54,7 +54,7 @@ Sumber: [Data Terbuka BMKG](https://data.bmkg.go.id/).
 
 `/{provinsi}`
 
-> :warning: Gunakan `/dki-jakarta` dan `di-yogyakarta` untuk Provinsi DKI Jakarta dan DI Yogyakarta.
+> :warning: Gunakan `/dki-jakarta` dan `/di-yogyakarta` untuk Provinsi DKI Jakarta dan DI Yogyakarta.
 
 **Contoh:**
 
@@ -234,13 +234,15 @@ Sumber: [Data Terbuka BMKG](https://data.bmkg.go.id/).
 
 ### Kota
 
+> :warning: Selalu tambahkan `kota-` atau `kabupaten-` sebelum nama kota/kabupaten.
+
 **Endpoint:**
 
 `/{provinsi}/{kota}`
 
 **Contoh:**
 
-`/jawa-barat/bandung`
+`/jawa-barat/kota-bandung`
 
 **Response:**
 

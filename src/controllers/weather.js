@@ -47,6 +47,8 @@ const getByCity = async (req, res) => {
 
     const weatherByCity = refactoredJsonWeathers.areas.find(
       (area) => area.description == toUpperFirstLetterWords(city, '-', ' ')
+    ) || refactoredJsonWeathers.areas.find(
+      (area) => area.description == toUpperFirstLetterWords(city.replace(/^(kabupaten-|kota-)/, ""), '-', ' ')
     );
 
     if (!weatherByCity) {
